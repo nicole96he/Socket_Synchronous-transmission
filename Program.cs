@@ -4,46 +4,46 @@ using System.Text;
 using System.Net.Sockets;
 using System.Net;
 
-namespace Server
+namespace Client
 {
     class MainClass
     {
         public static void Main(string[] args)
-        { 
-            Socket spylisten = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        {
+            Socket clientt = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPAddress IP = IPAddress.Parse("127.0.0.1");
             IPEndPoint IPE = new IPEndPoint(IP, 4321);
-            spylisten.Bind(IPE);
-            spylisten.Listen(0);
-            Console.WriteLine("Wait for connect...");
-            Socket temp = spylisten.Accept();
-            Console.WriteLine("Get connected");
-            byte[] bytes = new byte[1024];
-            while (true)
+            Console.WriteLine("Start to connect to server....");
+            try
             {
-                try
-                {
-                    //Console.WriteLine("receive successful.");
-                    bytes = new byte[1024];
-                    int recc_len = temp.Receive(bytes);
-                    string rec = Encoding.ASCII.GetString(bytes, 0, recc_len);
-                    Console.WriteLine("Client says: {0}",rec);
-                    byte[] send_bytes = Encoding.ASCII.GetBytes(Console.ReadLine());
-                    //Console.WriteLine("send successfully!");
-                    temp.Send(send_bytes,send_bytes.Length,0);
-                }
-                catch(ArgumentNullException e)
-                {
-                    Console.WriteLine("ArgumentNullException:{0}", e);
-                }
-                catch(SocketException e)
-                {
-                    Console.WriteLine("SocketException:{0}", e);
-                }
+
+                clientt.Connect(IPE);                                                                                    
+                string first_string = "Let's begin";
+                byte[] first = new byte[1024];
+                first = Encoding.ASCII.GetBytes(first_string);
+                clientt.Send(first);
+                byte[] recc = new byte[1024];
+                while (true)
+                    {
+                        //Console.WriteLine("receive successful.");
+                        recc = new byte[1024];
+                        int recc_len = clientt.Receive(recc);
+                        string rec_string = Encoding.ASCII.GetString(recc, 0, recc_len);
+                        Console.WriteLine("Server says:{0}", rec_string);
+                        byte[] send_mes = Encoding.ASCII.GetBytes(Console.ReadLine());
+                        clientt.Send(send_mes,send_mes.Length,0);
+                    }              
+            }
+            catch (ArgumentNullException e)
+            {
+                Console.WriteLine("ArgumentNullException:{0}", e);
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine("SocketException:{0}", e);
+
             }
         }
     }
 }
-
-
 
